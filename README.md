@@ -4,12 +4,12 @@ Entrega del proyecto Lógica y consultas de SQL
 Descargamos la base de datos de: https://s3.amazonaws.com/staticcontent.thepowermba/Bootcamp+Data+%26+Analytics/D%26A24/SQL/BBDD_Proyecto.sql
 
 ## Creación e importación de la base de datos a tavés de DBeaver
-Sobre 'Bases de datos', botón derecho 'Crear nueva base de datos'. La llamaremos 'MovieStore'
-Sobre la nueva base de datos creada 'MovieStore', botón derecho y le damos a 'Establecer por defecto' 
-Desde Archivo / Open File, seleccionamos el fichero que hemos descargado. No aseguramos de estar conectados a <postgres>, seleccionamos todo el código y ejecutamos el script.
-
-Detalle de las tablas
-
+Sobre 'Bases de datos', botón derecho 'Crear nueva base de datos'. La llamaremos 'MovieStore'  
+Sobre la nueva base de datos creada 'MovieStore', botón derecho y le damos a 'Establecer por defecto'  
+Desde Archivo / Open File, seleccionamos el fichero que hemos descargado. No aseguramos de estar conectados a <postgres>, seleccionamos todo el código y ejecutamos el script.  
+  
+Detalle de las tablas  
+  
 |Tabla | Detalle| Clave primaria |
 |:---| :---|
 |Store          | guarda la información de las tiendas. | store_id |
