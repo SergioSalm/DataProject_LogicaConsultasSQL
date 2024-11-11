@@ -87,8 +87,9 @@ WHERE "actor_id" IN (
 	ON FA.film_id = F.film_id
 	AND F."title" = 'EGG IGBY')	
  
---¿?18. Selecciona todos los nombres de las películas únicos.
-
+--18. Selecciona todos los nombres de las películas únicos.
+SELECT DISTINCT(f."title")
+FROM "film" AS f
  
 --19. Encuentra el título de las películas que son comedias y tienen una duración mayor a 180 minutos en la tabla “filmˮ.
 SELECT "title", "film_id", "length" 
@@ -114,8 +115,9 @@ HAVING avg("media_peliculas") > 110
 SELECT AVG(r."return_date" - "rental_date") AS duracion_media_alquiler
 FROM "rental" r 
 
---¿?22. Crea una columna con el nombre y apellidos de todos los actores y actrices.
-
+--22. Crea una columna con el nombre y apellidos de todos los actores y actrices.
+SELECT  concat("first_name" , ' ' , "last_name") AS "nombre_actor"
+FROM "actor" AS A
 
 --23. Números de alquiler por día, ordenados por cantidad de alquiler de forma descendente.
 SELECT date_trunc('day', "rental_date") AS DIA, count("rental_id") AS numero_alquiler
@@ -147,8 +149,8 @@ FROM (
 	FROM "payment" AS P) AS "ventas_agrupadas"
 
 
---¿?27. ¿Qué películas se alquilan por encima del precio medio?
--- ¿sería la medía de las películas? Porque hay películas que unas veces se alquilan por encima de la media y otras veces por debajo
+--27. ¿Qué películas se alquilan por encima del precio medio?
+-- Nos interesan las películas que se hayan alquilado por encima del precio medio al menos una ve<
 SELECT "title"--, P."amount" 
 FROM "film" AS F
 JOIN "inventory" AS I
@@ -161,18 +163,6 @@ AND P."amount" < (
 	SELECT AVG("amount") 
 	FROM "payment") --La media es de 4.20066
 GROUP BY "title" 	
-
---FICTION CHRISTMAS se alquila por 0.99 y por 4.99
-SELECT "amount" 
-FROM "payment" AS p
-JOIN rental AS R
-ON p.RENTAL_ID  = r.RENTAL_ID 
-JOIN INVENTORY AS I 
-ON i.INVENTORY_ID  = r.INVENTORY_ID 
-JOIN FILM AS F 
-ON f.FILM_ID  = i.FILM_ID 
-AND f.TITLE  = 'FICTION CHRISTMAS'
-
 
 --28. Muestra el id de los actores que hayan participado en más de 40 películas.
 SELECT "actor"
@@ -223,8 +213,8 @@ ON  fa."film_id" = f."film_id"
 GROUP BY a."actor_id"
 
 
---¿todos los registros de alquiler para cada película? 33. Obtener todas las películas que tenemos y todos los registros de alquiler.
-SELECT 
+--33. Obtener todas las películas que tenemos y todos los registros de alquiler.
+--Nos interesa la combinación entre las películas que tenemos junto con los registros de alquiler 
 
 --34. Encuentra los 5 clientes que más dinero se hayan gastado con nosotros.
 SELECT total_gastado_cliente."customer_id", c."first_name", c."last_name", total_gastado_cliente."total_gastado"
@@ -266,6 +256,12 @@ FROM "film"
 LIMIT 5
 
 --41. Agrupa los actores por su nombre y cuenta cuántos actores tienen el mismo nombre. ¿Cuál es el nombre más repetido?
+--El nombre más repetido es KENNETH y PENELOPE 
+SELECT a."first_name", count(a."first_name")
+FROM "actor" AS a
+GROUP BY a."first_name"
+ORDER BY count(a."first_name") DESC 
+
 
 --42. Encuentra todos los alquileres y los nombres de los clientes que los realizaron.
 SELECT r."rental_id", r."rental_date", c."first_name", c."last_name"  
@@ -320,6 +316,15 @@ SELECT a."actor_id", a."first_name", a."last_name",
 FROM "actor" AS a
 
 --48. Crea una vista llamada “actor_num_peliculasˮ que muestre los nombres de los actores y el número de películas en las que han participado.
+CREATE VIEW "actor_num_peliculas" AS
+	SELECT a."actor_id", a."first_name", a."last_name",
+	   (SELECT count(*) 
+		FROM "film_actor" AS fa
+		WHERE fa."actor_id" = a."actor_id"
+		GROUP BY fa."actor_id") AS "numero_peliculas"
+	FROM "actor" AS a
+
+SELECT * FROM actor_num_peliculas
 
 --49. Calcula el número total de alquileres realizados por cada cliente.
 SELECT c."first_name", c."last_name",
@@ -338,8 +343,27 @@ ON c."category_id" = fc."category_id"
 AND name = 'Action'
 
 --51. Crea una tabla temporal llamada “cliente_rentas_temporalˮ para almacenar el total de alquileres por cliente.
+CREATE TEMPORARY TABLE cliente_rentas_temporal AS 
+	SELECT r."customer_id", count(r."rental_id")
+	FROM "rental" AS r
+	GROUP BY r."customer_id";
+
+SELECT * 
+FROM cliente_rentas_temporal
 
 --52. Crea una tabla temporal llamada “peliculas_alquiladasˮ que almacene las películas que han sido alquiladas al menos 10 veces.
+CREATE TEMPORARY TABLE peliculas_alquiladas AS 
+	SELECT i."film_id", f."title", count(r."rental_id")
+	FROM "rental" AS r
+	JOIN "inventory" AS i
+	ON i."inventory_id" = r."inventory_id"
+	JOIN "film" AS F
+	ON f."film_id" = i."film_id"
+	group BY i."film_id", f."title"
+	ORDER BY FILM_ID  ASC 
+	
+SELECT * 
+FROM peliculas_alquiladas	
 
 --53. Encuentra el título de las películas que han sido alquiladas por el cliente con el nombre ‘Tammy Sandersʼ y que aún no se han devuelto. Ordena los resultados alfabéticamente por título de película.
 SELECT f."title"
@@ -435,24 +459,50 @@ WHERE f."length" IN (
 ORDER BY f."title"
 
 --60. Encuentra los nombres de los clientes que han alquilado al menos 7 películas distintas. Ordena los resultados alfabéticamente por apellido.
-SELECT r."customer_id", count(DISTINCT "film_id") AS "numero_peliculas"
-FROM "rental" AS r
-GROUP BY r."customer_id"
-
-SELECT count(DISTINCT "film_id") AS "numero_peliculas"
-FROM "rental" AS r
-JOIN "inventory" AS i
-ON i."inventory_id" = r."inventory_id"
-GROUP BY "film_id"
+SELECT c."first_name", c."last_name"--, numero_peliculas
+FROM (
+	SELECT peliculas_cliente.CUSTOMER_ID, count(peliculas_cliente.film_id) AS total_peliculas_clientes
+	FROM (
+		SELECT r."customer_id", i."film_id"  
+		FROM "rental" AS r
+		JOIN "inventory" AS I 
+		ON i."inventory_id" = r."inventory_id" 
+		GROUP BY r."customer_id", i."film_id"
+		) AS peliculas_cliente  
+	GROUP BY peliculas_cliente."customer_id"
+	HAVING  count(peliculas_cliente."film_id") > 7
+	) AS peliculas_por_clientes
+JOIN "customer" AS C
+ON c."customer_id" = peliculas_por_clientes."customer_id"
 
 
 --61. Encuentra la cantidad total de películas alquiladas por categoría y muestra el nombre de la categoría junto con el recuento de alquileres.
+SELECT c."name" AS categoria, peliculas_categoria."pelicula_alquiladas_categoria" AS total_peliculas_alquiladas
+FROM ( 
+	SELECT fc."category_id", count(r."rental_id") AS pelicula_alquiladas_categoria
+	FROM "rental" AS r
+	JOIN "inventory" AS i
+	ON i."inventory_id" = r."inventory_id"
+	JOIN "film_category" AS fc
+	ON fc."film_id" = i."film_id"
+	GROUP BY fc."category_id") AS "peliculas_categoria"
+JOIN "category" AS c
+ON c."category_id" = peliculas_categoria."category_id"
 
 --62. Encuentra el número de películas por categoría estrenadas en 2006.
+SELECT c."name" AS categoria, peliculas_categoria."pelicula_categoria" AS total_peliculas_alquiladas
+FROM ( 
+	SELECT fc."category_id", count(fc."film_id") AS pelicula_categoria
+	FROM "film_category" AS fc
+	WHERE fc."film_id" IN (
+		SELECT f."film_id"
+		FROM "film" AS f
+		WHERE f."release_year" = 2006)
+		GROUP BY fc."category_id"
+		) AS "peliculas_categoria"
+JOIN "category" AS c
+ON c."category_id" = peliculas_categoria."category_id"
 
---SELECT f."release_year" 
---FROM "film" AS F
---WHERE f."release_year" = 2006
 
 --63. Obtén todas las combinaciones posibles de trabajadores con las tiendas que tenemos.
 SELECT s."staff_id", s."first_name", s."last_name", s2."store_id"
@@ -460,4 +510,15 @@ FROM "staff" AS S
 CROSS JOIN "store" AS S2 
 
 --64. Encuentra la cantidad total de películas alquiladas por cada cliente y muestra el ID del cliente, su nombre y apellido junto con la cantidad de películas alquiladas.
-
+SELECT c."customer_id", c."first_name", c."last_name", peliculas_alquiladas_agrupadas."peliculas_cliente"
+FROM(
+	SELECT peliculas_alquiladas."customer_id", count(peliculas_alquiladas."pelicula_alquiladas_cliente") AS peliculas_cliente
+	FROM ( 
+		SELECT r."customer_id", count(r."rental_id") AS pelicula_alquiladas_cliente
+		FROM "rental" AS r
+		JOIN "inventory" AS i
+		ON i."inventory_id" = r."inventory_id"	
+		GROUP BY r."customer_id", i."film_id") AS "peliculas_alquiladas"
+	GROUP BY peliculas_alquiladas."customer_id") AS peliculas_alquiladas_agrupadas
+JOIN "customer" AS c
+ON c."customer_id" = peliculas_alquiladas_agrupadas."customer_id"
