@@ -8,6 +8,8 @@ Sobre 'Bases de datos', botón derecho 'Crear nueva base de datos'. La llamaremo
 Sobre la nueva base de datos creada 'MovieStore', botón derecho y le damos a 'Establecer por defecto'  
 Desde Archivo / Open File, seleccionamos el fichero que hemos descargado. No aseguramos de estar conectados a <postgres>, seleccionamos todo el código y ejecutamos el script.  
   
+![Esquema ER](/Diagrama/DiagramaER.png)
+
 Detalle de las tablas  
   
 |Tabla | Detalle| Clave primaria |
