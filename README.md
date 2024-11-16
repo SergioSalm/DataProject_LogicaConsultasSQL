@@ -1,9 +1,9 @@
 # DataProject_LogicaConsultasSQL
-Entrega del proyecto Lógica y consultas de SQL
+Entrega del proyecto Lógica y consultas de SQL.  
 Encontramos tres carpetas en el proyecto:
-- BBDD_Data: Script SQL para la creación de tablas y registros
-- Diagrama: Imagen del esquema relacional de la base de datos. También se puede visualizar desde el fichero readme.md
-- Script: Script SQL con las consultas SQL del enunciado
+- BBDD_Data: Script SQL para la creación de tablas y registros.
+- Diagrama: Imagen del esquema relacional de la base de datos. También se puede visualizar desde el fichero readme.md.
+- Script: Script SQL con las consultas SQL del enunciado.
 
 Descargamos la base de datos de: https://s3.amazonaws.com/staticcontent.thepowermba/Bootcamp+Data+%26+Analytics/D%26A24/SQL/BBDD_Proyecto.sql
 
