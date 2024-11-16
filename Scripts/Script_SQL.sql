@@ -28,7 +28,8 @@ SELECT "rating" AS "clasificacion", count("film_id") AS "numero_peliculas"
 FROM "film" AS F
 GROUP BY "rating"
 
---8. Encuentra el título de todas las películas que son ‘PG-13ʼ o tienen una duración mayor a 3 horas en la tabla film. (3*60 = 180)
+--8. Encuentra el título de todas las películas que son ‘PG-13ʼ o tienen una duración mayor a 3 horas en la tabla film. 
+--(3*60 = 180)
 SELECT "title" AS "pelicula" --, "rating", "length" 
 FROM "film" AS F 
 WHERE "rating" = 'PG-13' OR "length" > 180 
@@ -89,7 +90,7 @@ SELECT DISTINCT(f."title") AS nombre_pelicula
 FROM "film" AS f
  
 --19. Encuentra el título de las películas que son comedias y tienen una duración mayor a 180 minutos en la tabla “filmˮ.
-SELECT "title" AS pelicula, "length"  AS duracion
+SELECT "title" AS pelicula--, "length"  AS duracion, c."name" as categoria
 FROM "film" AS f
 INNER JOIN "film_category" AS FC
 ON f."film_id" = fc."film_id"
@@ -168,11 +169,13 @@ WHERE "num_peliculas" > 40
 --29. Obtener todas las películas y, si están disponibles en el inventario, mostrar la cantidad disponible.
 SELECT f."title" AS pelicula, count("pelicula") AS disponibles 
 FROM (
-	SELECT i."film_id" AS "pelicula" --seleccionamos las películas que están disponibles en el inventario
+	SELECT i."film_id" AS "pelicula" --, return_Date--seleccionamos las películas que están disponibles en el inventario
     FROM "inventory" AS i 
-    RIGHT JOIN "rental" AS r 
+    LEFT JOIN "rental" AS r 
 	ON r."inventory_id" = i."inventory_id"
-    WHERE "return_date" < now()) as inventario_disponible --suponemos que si la fecha de retorno es inferior al dia de hoy. Entran los que tengan valor nulo también.
+    WHERE "return_date" < now()
+    group by i.inventory_id
+    ) as inventario_disponible --suponemos que si la fecha de retorno es inferior al dia de hoy. Entran los que tengan valor nulo también.
 RIGHT JOIN "film" AS f 
 ON f."film_id" = inventario_disponible."pelicula"
 GROUP BY f."film_id"
@@ -183,7 +186,6 @@ FROM "actor" AS a
 LEFT JOIN "film_actor" AS FA
 ON FA."actor_id" = a."actor_id"
 GROUP BY a."actor_id"
-
 
 --31. Obtener todas las películas y mostrar los actores que han actuado en ellas, incluso si algunas películas no tienen actores asociados.
 SELECT f."title" as "pelicula", string_agg(concat(a."first_name", ' ',a."last_name"),' -- ') AS "actores"
@@ -251,7 +253,6 @@ FROM "film"
 ORDER BY "film_id" ASC
 LIMIT 5
  
-
 --41. Agrupa los actores por su nombre y cuenta cuántos actores tienen el mismo nombre. ¿Cuál es el nombre más repetido?
 --El nombre más repetido es KENNETH y PENELOPE 
 SELECT a."first_name" AS nombre_actor, count(a."first_name") AS veces_repetido
@@ -391,20 +392,19 @@ AND name = 'Sci-Fi'
 GROUP BY a."actor_id"
 ORDER BY a."last_name"
 
-
 --55. Encuentra el nombre y apellido de los actores que han actuado en películas que se alquilaron después de que la película ‘Spartacus Cheaperʼ se alquilara por primera vez. Ordena los resultados alfabéticamente por apellido.
 --Asumimos que si se alquila un minuto después que la película ‘Spartacus Cheaperʼ, ya debería salir en la consulta. Si una película se ha alquila antes y también después, ese actor también saldrá en la película.
 SELECT concat(a."first_name", ' ', a."last_name") AS nombre_actor
 FROM "actor" AS a
 WHERE a."actor_id" IN(
-	SELECT fa."actor_id"
+	SELECT fa."actor_id" --Seleccionamos las peliculas alquiladas después del primer alquiler de 'Spartacus Cheaper'
 	FROM "film_actor" AS fa
 	JOIN "inventory" AS i2
 	ON fa."film_id" = i2."film_id"
 	JOIN "rental" AS r2
 	ON r2."inventory_id" = i2."inventory_id"
 	AND r2."rental_date" > (
-		SELECT r."rental_date"
+		SELECT r."rental_date" --Seleccionamos el registro del primer alquiler de 'Spartacus Cheaper'
 		FROM "rental" AS r
 		JOIN "inventory" AS I
 		ON i."inventory_id" = r."inventory_id"
@@ -454,7 +454,7 @@ AND c."name" = 'Animation'
 SELECT f."title" AS pelicula, f."length" AS duracion
 FROM "film" AS f
 WHERE f."length" = (
-	SELECT f2."length"
+	SELECT f2."length" -- Buscamos la longitud de la película 'Dancing Fever'
 	FROM "film" AS f2
 	WHERE f2."title" = 'DANCING FEVER') --144
 ORDER BY f."title"
